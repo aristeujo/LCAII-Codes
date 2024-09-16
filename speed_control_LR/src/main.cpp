@@ -1,7 +1,7 @@
 #include <Arduino.h>
 #include <stdint.h>
-#include "motor.h"
-#include "encoder.h"
+#include <motor.h>
+#include <encoder.h>
 
 void check_channel_A();
 void check_channel_B();
