@@ -1,5 +1,4 @@
-#ifndef MOTOR_H_
-#define MOTOR_H_
+#pragma once
 
 #include <Arduino.h>
 
@@ -39,5 +38,3 @@ public:
      */
     void setSpeed(int pwm);
 };
-
-#endif
