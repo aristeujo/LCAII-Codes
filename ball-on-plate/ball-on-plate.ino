@@ -7,11 +7,9 @@
 
 #define USE_STATE_FEEDBACK
 
-float difEqControlX(Matrix<systemOrder,1> currentState, float* e, float* u);
-float difEqControlY(Matrix<systemOrder,1> currentState, float* e, float* u);
+float difEqControl(Matrix<systemOrder,1> currentState, float* e, float* u);
 
-std::function<float(Matrix<2, 1>, float*, float*)> difX;
-std::function<float(Matrix<2, 1>, float*, float*)> difY;
+std::function<float(Matrix<systemOrder, 1>, float*, float*)> diff = difEqControl;
 
 ServoControl servos(23, 19);
 TouchScreen ts(27, 26, 32, 33, 25);
@@ -21,14 +19,14 @@ screenCoordinatesCm coordsCm;
 KalmanFilter xFilter(sys.A, sys.B, sys.C, 0.01, 200, 150);
 KalmanFilter yFilter(sys.A, sys.B, sys.C, 0.01, 200, 150);
 
-Matrix<1,2> stateFeedbackGains = {0.0, 0.0};
+Matrix<1,2> stateFeedbackGains = {17.8954, 10.0515};
 
 #ifdef USE_STATE_FEEDBACK
 Controller xController(stateFeedbackGains);
 Controller yController(stateFeedbackGains);
 #else
-Controller xController(difX);
-Controller yController(difY);
+Controller xController(diff);
+Controller yController(diff);
 #endif
 
 float angleX = 0;
@@ -49,10 +47,10 @@ float referenceY = 0;
 Matrix<2, 1> statesX = {0, 0};
 Matrix<2, 1> statesY = {0, 0};
 
-float difEqControlX(Matrix<2,1> currentState, float* e, float* u) {
+float difEqControl(Matrix<2,1> currentState, float* e, float* u) {
   /*
-    e -> é um vetor com tamanho 2;
-    u -> é um vetor com tamanho 2;
+    e -> é um vetor com tamanho 3 -> (n, n-1, n-2);
+    u -> é um vetor com tamanho 3 -> (n, n-1, n-2);
 
     CUIDADO: EXCEDENDO A DIMENSÃO VAI CRASHAR O CODIGO;
   */
@@ -63,32 +61,10 @@ float difEqControlX(Matrix<2,1> currentState, float* e, float* u) {
   }
 
   // Cálculo do erro
-  e[0] = 0 - currentState(0); // Usando somente o primeiro estado
+  e[0] = currentState(0); // Usando somente o primeiro estado
 
   // Cálculo do sinal de controle <----- ALTERAR A LEI DE CONTROLE AQUI
-  u[0] = 1.1329 * u[1] - 0.1329 * u[2] + 6.7469 * e[1] - 6.0454 * e[2];
-
-  return u[0];
-}
-
-float difEqControlY(Matrix<2,1> currentState, float* e, float* u) {
-  /*
-    e -> é um vetor com tamanho 2;
-    u -> é um vetor com tamanho 2;
-
-    CUIDADO: EXCEDENDO A DIMENSÃO VAI CRASHAR O CODIGO;
-  */
-
-  for (int i = 2; i > 0; i--) {
-    e[i] = e[i - 1];
-    u[i] = u[i - 1];
-  }
-
-  // Cálculo do erro
-  e[0] = 0 - currentState(0); // Usando somente o primeiro estado
-
-  // Cálculo do sinal de controle <----- ALTERAR A LEI DE CONTROLE AQUI
-  u[0] = 1.1329 * u[1] - 0.1329 * u[2] + 6.7469 * e[1] - 6.0454 * e[2];
+  u[0] = 0;
 
   return u[0];
 }
@@ -117,13 +93,13 @@ void loop() {
 
     statesX = xFilter.kalman(uX, posX);
     statesY = yFilter.kalman(uY, posY);
-
-    uX = xController.controlLaw(statesX);   
+    
+    uX = xController.controlLaw(statesX);
     uDegreeX = rad2deg(uX);
     saturate(&uDegreeX, -25, 25);
     uX = deg2rad(uDegreeX);
 
-    uY = yController.controlLaw(statesY);   
+    uY = yController.controlLaw(statesY);
     uDegreeY = rad2deg(uY);
     saturate(&uDegreeY, -25, 25);
     uY = deg2rad(uDegreeY);

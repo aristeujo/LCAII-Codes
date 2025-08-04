@@ -5,9 +5,9 @@ Controller::Controller(Matrix<1, systemOrder> gains){
   this->K = gains;
 };
 
-Controller::Controller(std::function<float(Matrix<2, 1>, float*, float*)> func){
+Controller::Controller(std::function<float(Matrix<systemOrder, 1>, float*, float*)> func){
   this->controllerType = ControllerType::DIFFERENCE;
-  this->diffEquationsControlFunc = diffEquationsControlFunc;
+  this->diffEquationsControlFunc = func;
 }
 
 Controller::~Controller(){};

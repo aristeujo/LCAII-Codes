@@ -16,8 +16,8 @@ class ServoControl{
     void moveServos(int angle1, int angle2);
 
     //Initial position of the servos
-    float offset1 = 79.8;
-    float offset2 = 79;
+    float offset1 = 86;
+    float offset2 = 72;
     
   private:
 
