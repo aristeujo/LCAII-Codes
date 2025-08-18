@@ -1,3 +1,4 @@
+#include <Arduino.h>
 #include "touchScreen.h"
 #include "servoControl.h"
 #include "controller.h"
